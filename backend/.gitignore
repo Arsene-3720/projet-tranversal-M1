@@ -1,0 +1,72 @@
+# ==============================
+# Node.js
+# ==============================
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+.pnpm-debug.log*
+
+# ==============================
+# Logs
+# ==============================
+logs
+*.log
+logs/*
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# ==============================
+# Tests
+# ==============================
+coverage/
+.nyc_output
+
+# ==============================
+# Build / dist
+# ==============================
+dist/
+build/
+.cache/
+.next/
+out/
+.tmp/
+
+# ==============================
+# Runtime data
+# ==============================
+*.gz
+*.zip
+*.tar
+*.tgz
+
+# ==============================
+# Environment files (secrets !)
+# ==============================
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# ==============================
+# IDE / OS
+# ==============================
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# ==============================
+# Optional (si tu utilises Docker)
+# ==============================
+docker-compose.override.yml
+.docker/
+
+# ==============================
+# Optional (si tu utilises TypeScript)
+# ==============================
+*.tsbuildinfo
