@@ -13,6 +13,9 @@ mongoose.connect(process.env.MONGO_URI)
 
   app.use('/safe', routes);
 
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log(`🚀 Serveur lancé sur le port ${PORT}`));
 
 
-app.listen(3000, () => console.log("http localhost sur le port 3000"));
+
+app.listen(PORT, () => console.log("http localhost sur le port 3000"));
