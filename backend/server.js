@@ -18,4 +18,4 @@ app.listen(PORT, () => console.log(`🚀 Serveur lancé sur le port ${PORT}`));
 
 
 
-app.listen(PORT, () => console.log("http localhost sur le port 3000"));
+app.listen(PORT, () => console.log(`connecté sur le port ${PORT}`));
