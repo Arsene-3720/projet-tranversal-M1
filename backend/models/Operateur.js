@@ -1,7 +1,6 @@
-const mongoose = require("mongoose");
-
 const operateurSchema = new mongoose.Schema({
-  nom: { type: String, required: true }
+  nom: { type: String, required: true },
+  role: { type: String, default: "operateur" }
 });
 
 operateurSchema.methods.qualifierIncident = function () {
