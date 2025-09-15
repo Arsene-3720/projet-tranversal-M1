@@ -1,128 +1,63 @@
-const Administrateur = require("../models/Administrateur");
-const Operateur = require("../models/Operateur");
-const Citoyen = require("../models/Citoyen");
-const Analyste = require("../models/Analyste");
+const express = require("express");
+const router = express.Router();
 const jwt = require("jsonwebtoken");
+const User = require("../models/User");
 
-// Fonction générique pour générer un token
-const generateToken = (id) => {
-  return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: "1h" });
+// Fonction pour générer un token JWT
+const generateToken = (user) => {
+  return jwt.sign(
+    { id: user._id, role: user.role },
+    process.env.JWT_SECRET,
+    { expiresIn: "1h" }
+  );
 };
 
-// ------------------- ADMIN -------------------
-exports.loginAdmin = async (req, res) => {
-  const { email, password } = req.body;
+// ------------------- REGISTER -------------------
+router.post("/register", async (req, res) => {
   try {
-    const admin = await Administrateur.findOne({ email });
-    if (!admin) return res.status(401).json({ message: "Email ou mot de passe incorrect" });
+    const { nom, email, password, role } = req.body;
 
-    const isMatch = await admin.comparePassword(password);
-    if (!isMatch) return res.status(401).json({ message: "Email ou mot de passe incorrect" });
+    const existingUser = await User.findOne({ email });
+    if (existingUser) return res.status(400).json({ error: "Email déjà utilisé" });
 
-    const token = generateToken(admin._id);
-    res.json({ token, admin });
+    const user = new User({ nom, email, password, role });
+    await user.save();
+
+    const token = generateToken(user);
+
+    res.status(201).json({
+      message: "Inscription réussie",
+      user: { id: user._id, nom: user.nom, email: user.email, role: user.role },
+      token
+    });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ error: error.message });
   }
-};
+});
 
-// ------------------- OPERATEUR -------------------
-exports.loginOperateur = async (req, res) => {
-  const { email, password } = req.body;
+// ------------------- LOGIN -------------------
+router.post("/login", async (req, res) => {
   try {
-    const op = await Operateur.findOne({ email });
-    if (!op) return res.status(401).json({ message: "Email ou mot de passe incorrect" });
+    const { email, password } = req.body;
 
-    const isMatch = await op.comparePassword(password);
-    if (!isMatch) return res.status(401).json({ message: "Email ou mot de passe incorrect" });
+    console.log("Requête login reçue:", req.body);
 
-    const token = generateToken(op._id);
-    res.json({ token, operateur: op });
+    const user = await User.findOne({ email });
+    if (!user) return res.status(400).json({ error: "Utilisateur non trouvé" });
+
+    const isMatch = await user.comparePassword(password);
+    if (!isMatch) return res.status(400).json({ error: "Mot de passe incorrect" });
+
+    const token = generateToken(user);
+
+    res.json({
+      message: "Connexion réussie",
+      user: { id: user._id, nom: user.nom, email: user.email, role: user.role },
+      token
+    });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ error: error.message });
   }
-};
+});
 
-// ------------------- CITOYEN -------------------
-exports.loginCitoyen = async (req, res) => {
-  const { email, password } = req.body;
-  try {
-    const citoyen = await Citoyen.findOne({ email });
-    if (!citoyen) return res.status(401).json({ message: "Email ou mot de passe incorrect" });
-
-    const isMatch = await citoyen.comparePassword(password);
-    if (!isMatch) return res.status(401).json({ message: "Email ou mot de passe incorrect" });
-
-    const token = generateToken(citoyen._id);
-    res.json({ token, citoyen });
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-};
-
-// ------------------- ANALYSTE -------------------
-exports.loginAnalyste = async (req, res) => {
-  const { email, password } = req.body;
-  try {
-    const analyste = await Analyste.findOne({ email });
-    if (!analyste) return res.status(401).json({ message: "Email ou mot de passe incorrect" });
-
-    const isMatch = await analyste.comparePassword(password);
-    if (!isMatch) return res.status(401).json({ message: "Email ou mot de passe incorrect" });
-
-    const token = generateToken(analyste._id);
-    res.json({ token, analyste });
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-};
-
-/////////////////////////////////////////////////////// REGISTER 
-
-// ------------------- ADMIN -------------------
-exports.registerAdmin = async (req, res) => {
-    try {
-      const admin = new Administrateur(req.body);
-      await admin.save();
-      const token = generateToken(admin._id);
-      res.status(201).json({ token, admin });
-    } catch (error) {
-      res.status(400).json({ message: error.message });
-    }
-  };
-  
-  // ------------------- OPERATEUR -------------------
-  exports.registerOperateur = async (req, res) => {
-    try {
-      const op = new Operateur(req.body);
-      await op.save();
-      const token = generateToken(op._id);
-      res.status(201).json({ token, operateur: op });
-    } catch (error) {
-      res.status(400).json({ message: error.message });
-    }
-  };
-  
-  // ------------------- CITOYEN -------------------
-  exports.registerCitoyen = async (req, res) => {
-    try {
-      const citoyen = new Citoyen(req.body);
-      await citoyen.save();
-      const token = generateToken(citoyen._id);
-      res.status(201).json({ token, citoyen });
-    } catch (error) {
-      res.status(400).json({ message: error.message });
-    }
-  };
-  
-  // ------------------- ANALYSTE -------------------
-  exports.registerAnalyste = async (req, res) => {
-    try {
-      const analyste = new Analyste(req.body);
-      await analyste.save();
-      const token = generateToken(analyste._id);
-      res.status(201).json({ token, analyste });
-    } catch (error) {
-      res.status(400).json({ message: error.message });
-    }
-  };
+module.exports = router;
