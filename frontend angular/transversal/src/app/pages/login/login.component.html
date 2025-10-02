@@ -1,0 +1,8 @@
+<form (ngSubmit)="submit()">
+    <h2>Connexion</h2>
+    <label>Email <input [(ngModel)]="email" name="email" /></label>
+    <label>Mot de passe <input [(ngModel)]="password" name="password" type="password" /></label>
+    <button [disabled]="loading" type="submit">Se connecter</button>
+    <p *ngIf="error" style="color:red">{{ error }}</p>
+  </form>
+  

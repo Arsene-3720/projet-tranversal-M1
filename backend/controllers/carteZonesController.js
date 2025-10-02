@@ -1,4 +1,4 @@
-const CarteZones = require("../models/CarteZones");
+const CarteZones = require("../entities/carteZones.entity");
 
 // Créer une zone
 exports.createZone = async (req, res) => {

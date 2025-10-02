@@ -1,63 +1,42 @@
-const express = require("express");
-const router = express.Router();
-const jwt = require("jsonwebtoken");
-const User = require("../models/User");
+// controllers/authController.js (TypeORM)
+const jwt = require('jsonwebtoken');
+const { User } = require('../entities/user.entity');
 
-// Fonction pour générer un token JWT
-const generateToken = (user) => {
-  return jwt.sign(
-    { id: user._id, role: user.role },
-    process.env.JWT_SECRET,
-    { expiresIn: "1h" }
-  );
-};
+const generateToken = (user) =>
+  jwt.sign({ id: user.id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '1h' });
 
-// ------------------- REGISTER -------------------
-router.post("/register", async (req, res) => {
+async function register(req, res) {
   try {
     const { nom, email, password, role } = req.body;
+    const repo = req.ds.getRepository(User);
+    const exists = await repo.findOne({ where: { email } });
+    if (exists) return res.status(400).json({ error: 'Email déjà utilisé' });
 
-    const existingUser = await User.findOne({ email });
-    if (existingUser) return res.status(400).json({ error: "Email déjà utilisé" });
-
-    const user = new User({ nom, email, password, role });
-    await user.save();
+    const user = repo.create({ nom, email, password, role }); // hash via subscriber
+    await repo.save(user);
 
     const token = generateToken(user);
-
-    res.status(201).json({
-      message: "Inscription réussie",
-      user: { id: user._id, nom: user.nom, email: user.email, role: user.role },
-      token
-    });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(201).json({ message: 'Inscription réussie', user: { id: user.id, nom: user.nom, email: user.email, role: user.role }, token });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
   }
-});
+}
 
-// ------------------- LOGIN -------------------
-router.post("/login", async (req, res) => {
+async function login(req, res) {
   try {
     const { email, password } = req.body;
+    const repo = req.ds.getRepository(User);
+    const user = await repo.createQueryBuilder('u').addSelect('u.password').where('u.email = :email', { email }).getOne();
+    if (!user) return res.status(400).json({ error: 'Utilisateur non trouvé' });
 
-    console.log("Requête login reçue:", req.body);
-
-    const user = await User.findOne({ email });
-    if (!user) return res.status(400).json({ error: "Utilisateur non trouvé" });
-
-    const isMatch = await user.comparePassword(password);
-    if (!isMatch) return res.status(400).json({ error: "Mot de passe incorrect" });
+    const ok = await user.comparePassword(password);
+    if (!ok) return res.status(400).json({ error: 'Mot de passe incorrect' });
 
     const token = generateToken(user);
-
-    res.json({
-      message: "Connexion réussie",
-      user: { id: user._id, nom: user.nom, email: user.email, role: user.role },
-      token
-    });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.json({ message: 'Connexion réussie', user: { id: user.id, nom: user.nom, email: user.email, role: user.role }, token });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
   }
-});
+}
 
-module.exports = router;
+module.exports = { register, login };

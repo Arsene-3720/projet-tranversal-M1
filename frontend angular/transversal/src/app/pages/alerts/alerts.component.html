@@ -1,0 +1,81 @@
+<section>
+    <h2>Créer une alerte</h2>
+  
+    <form [formGroup]="form" (ngSubmit)="submit()">
+      <div>
+        <label>Type d’incident *</label>
+        <input formControlName="typeIncidentId" placeholder="ex: vol, agression, etc." />
+        <small *ngIf="form.controls.typeIncidentId.touched && form.controls.typeIncidentId.invalid" style="color:#c00">
+          Obligatoire
+        </small>
+      </div>
+  
+      <div>
+        <label>Description *</label>
+        <textarea formControlName="description" rows="3" placeholder="Décrivez l’incident..."></textarea>
+        <small *ngIf="form.controls.description.touched && form.controls.description.invalid" style="color:#c00">
+          Obligatoire
+        </small>
+      </div>
+  
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+        <div>
+          <label>Latitude</label>
+          <input type="number" step="0.000001" formControlName="latitude" placeholder="-18.8792" />
+        </div>
+        <div>
+          <label>Longitude</label>
+          <input type="number" step="0.000001" formControlName="longitude" placeholder="47.5079" />
+        </div>
+      </div>
+  
+      <div>
+        <label>Adresse</label>
+        <input formControlName="adresse" placeholder="Adresse / repère" />
+      </div>
+  
+      <div>
+        <label>Citoyen ID (optionnel)</label>
+        <input formControlName="citoyenId" placeholder="ID du citoyen" />
+      </div>
+  
+      <div style="margin-top:12px; display:flex; gap:8px;">
+        <button type="button" (click)="useMyLocation()">Utiliser ma position</button>
+        <button type="submit" [disabled]="loadingCreate()">Créer l’alerte</button>
+        <button type="button" (click)="resetCreate()">Réinitialiser</button>
+      </div>
+  
+      <p *ngIf="loadingCreate()">Création en cours…</p>
+      <p *ngIf="errorCreate()" style="color:#c00">{{ errorCreate() }}</p>
+  
+      <div *ngIf="lastCreateResponse()" style="margin-top:12px; padding:8px; border:1px solid #ddd;">
+        <strong>Alerte créée.</strong>
+        <div *ngIf="lastCreatedAlertId()">ID : {{ lastCreatedAlertId() }}</div>
+        <pre style="white-space:pre-wrap">{{ lastCreateResponse() | json }}</pre>
+      </div>
+    </form>
+  </section>
+  
+  <hr />
+  
+  <section>
+    <h2>Envoyer l’alerte à la police</h2>
+  
+    <div>
+      <label>ID de l’alerte</label>
+      <input [(ngModel)]="sendToPoliceId" name="sendToPoliceId" placeholder="ID retourné à la création" />
+    </div>
+  
+    <div style="margin-top:12px;">
+      <button (click)="sendToPolice()" [disabled]="loadingSend()">Envoyer</button>
+    </div>
+  
+    <p *ngIf="loadingSend()">Envoi en cours…</p>
+    <p *ngIf="errorSend()" style="color:#c00">{{ errorSend() }}</p>
+  
+    <div *ngIf="sendToPoliceResponse()" style="margin-top:12px; padding:8px; border:1px solid #ddd;">
+      <strong>Réponse :</strong>
+      <pre style="white-space:pre-wrap">{{ sendToPoliceResponse() | json }}</pre>
+    </div>
+  </section>
+  
